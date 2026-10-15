@@ -142,7 +142,7 @@ private final class ScanRun {
         measured.formUnion(localIDs)
         let snapshot = FileSnapshot(isComplete: complete, url: url.lexicallyNormalized, home: policy.home, root: root,
                                     entries: entries.sorted { $0.relativePath < $1.relativePath }, ancestors: initialAncestors,
-                                    containsHardlinks: containsHardlinks)
+                                    containsHardlinks: containsHardlinks, allocatedBytes: bytes)
         let eligibility: CandidateEligibility
         if !complete { eligibility = .reviewOnly("Incomplete or changing measurement. Scan again before cleanup.") }
         else if containsHardlinks { eligibility = .reviewOnly("Contains shared hard links; allocation is counted only once and reclaimable space is uncertain.") }

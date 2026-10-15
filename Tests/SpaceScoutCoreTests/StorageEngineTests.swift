@@ -295,4 +295,39 @@ final class StorageEngineTests {
         #expect(report.issues.contains { $0.url == link })
     }
 
+    @Test func testProjectOrSkillMarkerAtCacheRootProtectsSiblingContents() throws {
+        for marker in [".git", "package.json", "SKILL.md"] {
+            let source = try file("Library/Caches/pip/source.txt")
+            try file("Library/Caches/pip/" + (marker == ".git" ? ".git/HEAD" : marker))
+            let item = try candidate(source)
+            #expect(!item.isEligible)
+            #expect(CleanupService(home: home, trashOperation: try fakeTrash()).trash([item], confirmed: true).first?.status == .refused)
+            #expect(fm.fileExists(atPath: source.path))
+            try fm.removeItem(at: home.appendingPathComponent("Library/Caches/pip"))
+        }
+    }
+    @Test func testContainingProjectMarkerIntroducedAfterScanPreventsCleanup() throws {
+        for marker in [".git", "package.json", "SKILL.md"] {
+            let source = try file("Library/Caches/pip/source.txt")
+            let item = try candidate(source)
+            #expect(item.isEligible)
+            try file("Library/Caches/pip/" + (marker == ".git" ? ".git/HEAD" : marker))
+            #expect(throws: (any Error).self) { try ScanPolicy(home: self.home).validate(item) }
+            #expect(CleanupService(home: home, trashOperation: try fakeTrash()).trash([item], confirmed: true).first?.status == .refused)
+            #expect(fm.fileExists(atPath: source.path))
+            try fm.removeItem(at: home.appendingPathComponent("Library/Caches/pip"))
+        }
+    }
+    @Test func testSuccessfulCleanupBytesComeFromOpaqueScanEvidence() throws {
+        let original = try file("Library/Caches/pip/item")
+        let scanned = try candidate(original)
+        let rebuilt = Candidate(id: scanned.id, url: scanned.url, title: scanned.title, category: scanned.category,
+                                allocatedBytes: 999_999_999, modifiedAt: scanned.modifiedAt, reason: scanned.reason,
+                                eligibility: scanned.eligibility, snapshot: scanned.snapshot)
+        let outcome = try #require(CleanupService(home: home, trashOperation: try fakeTrash()).trash([rebuilt], confirmed: true).first)
+        #expect(outcome.status == .trashed)
+        #expect(outcome.allocatedBytes == scanned.allocatedBytes)
+        #expect(!fm.fileExists(atPath: original.path))
+    }
+
 }

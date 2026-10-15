@@ -11,6 +11,7 @@ public struct FileSnapshot: Sendable {
     let entries: [SnapshotEntry]
     let ancestors: [AncestorIdentity]
     let containsHardlinks: Bool
+    let allocatedBytes: Int64
 }
 
 struct NodeIdentity: Equatable, Hashable, Sendable {

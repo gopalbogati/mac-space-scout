@@ -59,10 +59,33 @@ public struct ScanPolicy: Sendable {
                 || part.hasSuffix(".xcworkspace") || modelExtensions.contains((part as NSString).pathExtension)
         }
     }
+    /// A project or skill marker protects siblings and all descendants of its directory.
+    /// Probe a fixed set of names, avoiding unbounded directory enumeration during policy checks.
+    private func validateContainingDirectories(of url: URL, isDirectory: Bool) throws {
+        let markers = [".git", ".svn", ".gitignore", "SKILL.md", "Package.swift", "package.json",
+                       "Cargo.toml", "pyproject.toml", "go.mod", "CMakeLists.txt"]
+        var directory = isDirectory ? url : url.deletingLastPathComponent()
+        while Self.contains(directory, in: home, allowEqual: true) {
+            _ = try checkedAncestors(of: directory)
+            let metadata = try NodeMetadata.read(directory)
+            guard metadata.isDirectory, !metadata.isSymlink, !metadata.isDataless else {
+                throw PolicyError("A containing directory is unsupported or changed.")
+            }
+            for marker in markers {
+                do {
+                    _ = try NodeMetadata.read(directory.appendingPathComponent(marker))
+                    throw PolicyError("A containing directory has project or skill metadata; preserve all its contents.")
+                } catch let error as POSIXError where error.code == .ENOENT { continue }
+            }
+            if directory.path == home.path { break }
+            directory.deleteLastPathComponent()
+        }
+    }
     func rootForCleanup(_ url: URL, metadata: NodeMetadata, now: Date = Date()) throws -> URL {
         try validateHome()
         let url = url.lexicallyNormalized
         guard !Self.isProtected(url), Self.contains(url, in: home) else { throw PolicyError("Protected or unsupported location.") }
+        try validateContainingDirectories(of: url, isDirectory: metadata.isDirectory)
         for root in Self.cacheRoots {
             let rootURL = home.appendingPathComponent(root.relativePath, isDirectory: true)
             if Self.contains(url, in: rootURL) {

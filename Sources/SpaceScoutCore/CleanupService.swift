@@ -20,7 +20,7 @@ public struct CleanupService {
         return candidates.enumerated().map { index, candidate in
             func result(_ status: CleanupStatus, _ message: String) -> CleanupOutcome {
                 CleanupOutcome(candidateID: candidate.id, url: candidate.url, status: status, message: message,
-                               allocatedBytes: status == .trashed ? candidate.allocatedBytes : 0)
+                               allocatedBytes: status == .trashed ? (candidate.snapshot?.allocatedBytes ?? 0) : 0)
             }
             guard confirmed else { return result(.refused, "Explicit confirmation is required.") }
             guard !overlapping.contains(index) else { return result(.refused, "Duplicate or overlapping selections are refused.") }
