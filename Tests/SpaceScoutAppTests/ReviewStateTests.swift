@@ -58,3 +58,20 @@ struct AppSafetyTests {
         #expect(state.selected.isEmpty)
     }
 }
+
+struct FileAccessTests {
+    @MainActor @Test func missingFileOpenShowsErrorAndNeverSelectsItem() {
+        let model = AppModel(demo: false)
+        let missing = Candidate(id: "missing", url: URL(fileURLWithPath: "/private/tmp/SpaceScoutMissing-\(UUID().uuidString)"), title: "Missing fixture", category: .largeFile, allocatedBytes: 0, modifiedAt: .distantPast, reason: "Fixture", eligibility: .reviewOnly("Personal file"))
+        model.open(missing)
+        #expect(model.actionError != nil)
+        #expect(model.selected.isEmpty)
+    }
+    @MainActor @Test func demoOpenIsDisabledEvenForExistingRealPath() {
+        let model = AppModel(demo: true)
+        let existing = Candidate(id: "root", url: URL(fileURLWithPath: "/"), title: "Fixture", category: .largeFile, allocatedBytes: 0, modifiedAt: .distantPast, reason: "Fixture", eligibility: .reviewOnly("Protected"))
+        model.open(existing)
+        #expect(model.actionError == nil)
+        #expect(model.selected.isEmpty)
+    }
+}

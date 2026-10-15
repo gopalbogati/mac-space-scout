@@ -9,6 +9,7 @@ A small native macOS app for understanding storage and reviewing conservative cl
 - Shows measured volume capacity and available space separately from allocated-size estimates.
 - Scans supported developer caches and Downloads metadata in the background, with cancellation and visible partial-coverage issues.
 - Filters findings by category, searches paths, sorts by size, and explains why an item needs review.
+- Opens a file in its default app or a folder in Finder through an explicit **Open** action; **Reveal in Finder** shows its location. Both actions work for protected/review-only findings without selecting them for cleanup. Missing or inaccessible items show an error.
 - Starts with nothing selected. Only eligible items can be selected. A confirmation lists every exact selected path and size before fresh engine validation and a move to Trash.
 - Preserves AI models, installed skills, detected Git/project contents, cloud storage, applications and personal files. Large Downloads folders and unknown caches are review-only.
 - Keeps per-item refusals and failures visible. Provides Open Trash for manual review, with no Empty Trash action.
@@ -27,7 +28,15 @@ For a screenshot-safe demonstration, run from the source checkout after building
 open dist/SpaceScout.app --args --demo
 ```
 
-Demo mode displays a permanent synthetic-data notice. Scanning, cleanup, Trash and Finder actions are disabled. Normal launch never scans automatically.
+For a development PNG rendered from only the app’s own demo view, without desktop screen capture:
+
+```sh
+dist/SpaceScout.app/Contents/MacOS/SpaceScout --demo-snapshot /private/tmp/SpaceScout-demo.png
+```
+
+This flag forces synthetic demo mode, writes a 2× PNG after layout, and exits. Supply an absolute `.png` path in an existing directory. It cannot be combined with `--scan-json`.
+
+Demo mode displays a permanent synthetic-data notice. Scanning, cleanup, Trash, Open and Finder actions are disabled. Normal launch never scans automatically.
 
 ## Build and test
 

@@ -4,21 +4,32 @@ import SpaceScoutCore
 
 @main struct SpaceScoutApp: App {
     @StateObject private var model: AppModel
+    private let options: LaunchOptions
     init() {
-        if CommandLine.arguments.contains("--scan-json") {
-            Self.printScanJSON()
+        do { options = try LaunchOptions(Array(CommandLine.arguments.dropFirst())) }
+        catch { fputs("\(error.localizedDescription)\n", stderr); exit(2) }
+        if options.scanJSON {
+            Self.printScanJSON(demo: options.demo)
             exit(0)
         }
-        _model = StateObject(wrappedValue: AppModel(demo: CommandLine.arguments.contains("--demo")))
+        let isDemo = options.demo
+        _model = StateObject(wrappedValue: AppModel(demo: isDemo))
         NSApplication.shared.setActivationPolicy(.regular)
+        if let path = options.snapshotPath {
+            DemoSnapshot.start(path: path)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
+                fputs("Demo snapshot failed: rendering timed out.\n", stderr); exit(1)
+            }
+        }
     }
     var body: some Scene {
-        WindowGroup("SpaceScout") { MainView(model: model) }
+        WindowGroup("SpaceScout") {
+            MainView(model: model)
+        }
             .defaultSize(width: 1180, height: 800)
             .commands { CommandGroup(replacing: .newItem) { }; CommandGroup(after: .appInfo) { Button("Scan storage", action: model.scan).disabled(model.demo || model.busy) } }
     }
-    private static func printScanJSON() {
-        let demo = CommandLine.arguments.contains("--demo")
+    private static func printScanJSON(demo: Bool) {
         let ids = demo ? Set<String>() : Set(NSWorkspace.shared.runningApplications.compactMap(\.bundleIdentifier))
         let report = demo ? DemoData.report : Scanner(runningBundleIDs: ids, limits: appScanLimits).scan()
         let capacity = demo ? DemoData.storage : try? StorageInfo.read()

@@ -9,7 +9,7 @@ struct MainView: View {
             VStack(alignment: .leading, spacing: 20) {
                 header
                 if model.demo {
-                    Label("DEMO · Synthetic sample data. Scanning, cleanup and Finder actions are disabled.", systemImage: "play.rectangle")
+                    Label("DEMO · Synthetic data. Scanning, cleanup, Open and Finder actions are disabled.", systemImage: "play.rectangle")
                         .font(.system(size: 12, weight: .medium)).foregroundColor(Theme.teal).padding(10)
                         .frame(maxWidth: .infinity, alignment: .leading).background(Theme.mint).cornerRadius(8)
                 }
@@ -143,9 +143,10 @@ struct MainView: View {
             Text(candidate.url.path).font(.system(size: 12, design: .monospaced)).textSelection(.enabled)
             HStack { Text("\(bytes(candidate.allocatedBytes)) allocated"); Spacer(); Text(candidate.modifiedAt, style: .date) }.font(.callout)
             Text(candidate.reason)
+            if let error = model.actionError { Label(error, systemImage: "exclamationmark.triangle").font(.caption).foregroundColor(.red).textSelection(.enabled) }
             if case .reviewOnly(let reason) = candidate.eligibility { Label(reason, systemImage: "lock.shield").foregroundColor(Theme.teal) }
             Text("Older timestamps do not prove that an item is unused. AI models, skills and detected projects are protected. Allocation estimates may include shared APFS storage and do not predict free-space gains.").font(.caption).foregroundColor(Theme.secondary)
-            HStack { Button("Reveal in Finder") { model.reveal(candidate) }.disabled(model.demo); Spacer(); Button("Done") { model.inspector = nil }.keyboardShortcut(.cancelAction) }
+            HStack { Button("Open") { model.open(candidate) }.disabled(model.demo || model.busy); Button("Reveal in Finder") { model.reveal(candidate) }.disabled(model.demo || model.busy); Spacer(); Button("Done") { model.inspector = nil }.keyboardShortcut(.cancelAction) }
         }.padding(28).frame(width: 560)
     }
 }

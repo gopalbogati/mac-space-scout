@@ -38,6 +38,7 @@ final class ScanMailbox: @unchecked Sendable {
     @Published var review: ReviewState
     @Published var storage: StorageInfo?
     @Published var capacityError: String?
+    @Published var actionError: String?
     @Published var phase = "Ready to explore"
     @Published var busy = false
     @Published var cleaning = false
@@ -60,6 +61,7 @@ final class ScanMailbox: @unchecked Sendable {
             review.receive(DemoData.report)
             storage = DemoData.storage
             hasScanned = true
+            progressCount = DemoData.report.visitedCount
             phase = "Demo scan complete · synthetic data"
         } else { refreshCapacity() }
     }
@@ -124,7 +126,24 @@ final class ScanMailbox: @unchecked Sendable {
             }
         }
     }
-    func reveal(_ candidate: Candidate) { guard !demo else { return }; NSWorkspace.shared.activateFileViewerSelecting([candidate.url]) }
+    func open(_ candidate: Candidate) {
+        guard !demo, !busy else { return }
+        guard checkExists(candidate) else { return }
+        if NSWorkspace.shared.open(candidate.url) { actionError = nil }
+        else { actionError = "Could not open \(candidate.url.path). No default application may be available, or access was denied." }
+    }
+    private func checkExists(_ candidate: Candidate) -> Bool {
+        guard FileManager.default.fileExists(atPath: candidate.url.path) else {
+            actionError = "This item no longer exists or cannot be accessed: \(candidate.url.path). Scan again to refresh the findings."
+            return false
+        }
+        return true
+    }
+    func reveal(_ candidate: Candidate) {
+        guard !demo, !busy, checkExists(candidate) else { return }
+        actionError = nil
+        NSWorkspace.shared.activateFileViewerSelecting([candidate.url])
+    }
     func openTrash() {
         guard !demo else { return }
         NSWorkspace.shared.open(FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".Trash"))

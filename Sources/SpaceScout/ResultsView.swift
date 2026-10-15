@@ -17,6 +17,13 @@ struct ResultsView: View {
             Divider()
             ScrollView {
                 LazyVStack(spacing: 0) {
+                    if let error = model.actionError {
+                        HStack(alignment: .top) {
+                            Label(error, systemImage: "exclamationmark.triangle").font(.system(size: 11)).textSelection(.enabled)
+                            Spacer()
+                            Button("Dismiss") { model.actionError = nil }
+                        }.foregroundColor(.red).padding(14).background(Color.red.opacity(0.04))
+                    }
                     if !model.issues.isEmpty {
                         DisclosureGroup("\(model.issues.count) scan issues · coverage is incomplete") {
                             ForEach(Array(model.issues.enumerated()), id: \.offset) { _, issue in
@@ -62,7 +69,8 @@ struct ResultsView: View {
                 }.frame(maxWidth: .infinity, alignment: .leading).contentShape(Rectangle())
             }.buttonStyle(.plain).help(detailReason(item))
             Text(bytes(item.allocatedBytes)).font(.system(size: 13, weight: .semibold, design: .rounded)).frame(minWidth: 73, alignment: .trailing)
-            Button { model.reveal(item) } label: { Image(systemName: "arrow.up.forward.square").foregroundColor(Theme.secondary) }.buttonStyle(.borderless).disabled(model.demo).help("Reveal in Finder").accessibilityLabel("Reveal \(item.title) in Finder")
+            Button("Open") { model.open(item) }.font(.system(size: 11)).disabled(model.demo || model.busy).accessibilityLabel("Open \(item.title)").help("Open file in its default app, or folder in Finder")
+            Button { model.reveal(item) } label: { Image(systemName: "arrow.up.forward.square").foregroundColor(Theme.secondary) }.buttonStyle(.borderless).disabled(model.demo || model.busy).help("Reveal in Finder").accessibilityLabel("Reveal \(item.title) in Finder")
             Button { model.inspector = item } label: { Image(systemName: "info.circle").foregroundColor(Theme.secondary) }.buttonStyle(.borderless).accessibilityLabel("Details for \(item.title)")
         }.padding(.horizontal, 18).padding(.vertical, 15)
     }
