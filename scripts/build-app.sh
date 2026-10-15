@@ -30,7 +30,16 @@ fi
 codesign --verify --deep --strict "$APP"
 ARCHIVE="SpaceScout-$VERSION-universal.zip"
 rm -f "$DIST/$ARCHIVE"
-ditto -c -k --keepParent "$APP" "$DIST/$ARCHIVE"
+# Stage only bundle contents, excluding resource forks, xattrs, ACLs and quarantine.
+ARCHIVE_STAGE="$(mktemp -d "$ROOT/.build/archive.XXXXXX")"
+trap 'rm -rf "$ARCHIVE_STAGE"' EXIT
+ditto --norsrc --noextattr --noacl --noqtn "$APP" "$ARCHIVE_STAGE/SpaceScout.app"
+# -X also omits ZIP extra fields (including incidental Unix UID/time metadata).
+(cd "$ARCHIVE_STAGE" && COPYFILE_DISABLE=1 /usr/bin/zip -q -r -X "$DIST/$ARCHIVE" SpaceScout.app)
+if ! /usr/bin/zipinfo -1 "$DIST/$ARCHIVE" | /usr/bin/awk '/(^|\/)(\._|__MACOSX($|\/))/ { found=1 } END { exit found }'; then
+  echo "Unexpected AppleDouble metadata in release archive" >&2
+  exit 1
+fi
 (cd "$DIST" && shasum -a 256 "$ARCHIVE" > "$ARCHIVE.sha256")
 lipo -info "$APP/Contents/MacOS/SpaceScout"
 echo "Built $APP"
