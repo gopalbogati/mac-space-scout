@@ -4,6 +4,10 @@ A small native macOS app for understanding storage and reviewing conservative cl
 
 **0.1.0 preview:** targets macOS 13 or later, Apple silicon and Intel. The packaged preview is **ad-hoc signed, not Developer ID signed or notarized**. Gatekeeper may prevent it from opening. Building from source is recommended for this preview; see [Apple’s app-specific security guidance](https://support.apple.com/en-au/102445). Do not disable system security protections.
 
+![SpaceScout native interface showing labelled synthetic demo findings](docs/preview.png)
+
+*Demo screenshot with synthetic sample data. File operations are disabled.*
+
 ## What it does
 
 - Shows measured volume capacity and available space separately from allocated-size estimates.
