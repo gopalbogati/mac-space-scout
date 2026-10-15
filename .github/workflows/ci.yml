@@ -1,0 +1,31 @@
+name: macOS tests and universal preview
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: swift --version
+      - name: Fixture tests
+        run: swift test
+      - name: Universal preview
+        run: ./scripts/build-app.sh
+      - name: Verify package
+        run: |
+          codesign --verify --deep --strict dist/SpaceScout.app
+          lipo dist/SpaceScout.app/Contents/MacOS/SpaceScout -verify_arch arm64 x86_64
+          cd dist
+          shasum -a 256 -c SpaceScout-0.1.0-universal.zip.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SpaceScout-0.1.0-universal-preview
+          path: |
+            dist/SpaceScout-0.1.0-universal.zip
+            dist/SpaceScout-0.1.0-universal.zip.sha256
+          if-no-files-found: error

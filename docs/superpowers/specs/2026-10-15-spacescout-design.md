@@ -1,6 +1,6 @@
-# SpaceScout — proposed first release
+# SpaceScout — approved first release
 
-15 October 2026. Status: proposed; implementation has not started.
+15 October 2026. Status: approved; implementation in progress. Core engine implemented and reviewed; native app and distribution in integration.
 
 ## Purpose
 Build a free, open-source macOS application that finds storage-heavy files, explains cleanup candidates, and helps users reclaim space through informed choices. Finding an old or large file is not proof it is unused. The application must never promise a speed increase from a storage scan.
@@ -32,7 +32,7 @@ The application operates locally without telemetry, accounts, uploads, administr
 Use temporary fixtures to test permitted paths, rejected system/personal paths, symlink escapes, identity changes after scanning, overlapping selections, inaccessible files, cancellation, and size accounting. Tests must not operate on the user's real files. Compile and launch the app on this Mac, inspect the interface, and perform a read-only scan. Only move user files after the user selects or approves the exact candidates.
 
 ## Open source and delivery
-Proposed repository: gopalbogati/mac-space-scout, public, MIT license. Include source, a plain-language README, screenshots made with sample data, build instructions, contribution guidance, security reporting guidance, automated macOS build/tests, and packaged release artifacts. Publish only project files; keep the private audit outside the repository.
+Repository target: gopalbogati/mac-space-scout, public, MIT license. Include source, a plain-language README, screenshots made with sample data, build instructions, contribution guidance, security reporting guidance, automated macOS build/tests, and packaged release artifacts. Publish only project files; keep the private audit outside the repository.
 
 For straightforward distribution to other Macs, use Developer ID signing and Apple notarization if a suitable identity and credentials are available. If unavailable, deliver buildable source and clearly labelled unsigned test artifacts with the limitation documented; never instruct users to disable Gatekeeper globally. A polished installable, signed public release requires those credentials.
 
