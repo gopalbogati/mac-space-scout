@@ -19,7 +19,7 @@ Alternatives: a Tauri desktop application offers easier future Windows/Linux sup
 6. Afterward show bytes moved to Trash separately from measured available disk space. Provide a button to open Trash for manual review. Space is not actually reclaimed until Trash is emptied; APFS snapshots and clones can also affect recovered space.
 
 ## Boundaries and privacy
-The application operates locally without telemetry, accounts, uploads, administrator access, scheduled deletion, or shell-based deletion. Never recursively clean the home directory, system directories, Application Support, browser profiles, Photos libraries, project source, cloud-synced folders, or backups. Do not publish this Mac's scan results or personal paths to GitHub. Root policy is enforced in the cleanup engine, independently of UI selection.
+The application operates locally without telemetry, accounts, uploads, administrator access, scheduled deletion, or shell-based deletion. Never recursively clean the home directory, system directories, Application Support, browser profiles, Photos libraries, project source, cloud-synced folders, or backups. Do not publish this Mac's scan results or personal paths to GitHub. Root policy is enforced in the cleanup engine, independently of UI selection. Preserve AI models, installed Codex/agent skills, detected Git repositories/project contents, and frequently used data. A cache candidate with any descendant modified within the last 7 days is review-only; older timestamps never establish disuse. Model, skill, and project marker protections apply throughout candidate trees and again before cleanup.
 
 ## Components
 - Scan engine: bounded background traversal, allocated-size measurement, cancellation, and permission/error reporting.

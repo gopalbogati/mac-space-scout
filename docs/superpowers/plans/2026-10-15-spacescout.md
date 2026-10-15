@@ -6,14 +6,15 @@
 
 **Architecture:** A Foundation library owns scan models, filesystem traversal, cleanup policy, and Trash operations. SwiftUI consumes that library and manages background tasks, selection, confirmations, and Finder navigation. Build scripts create a universal application bundle without external package dependencies.
 
-**Tech Stack:** Swift 6.1 toolchain, Swift language mode 5, Swift Package Manager, SwiftUI/AppKit/Foundation, XCTest, shell packaging scripts, GitHub Actions.
+**Tech Stack:** Swift 6.1 toolchain, Swift language mode 5, Swift Package Manager, SwiftUI/AppKit/Foundation, Swift Testing, shell packaging scripts, GitHub Actions.
 
 ## Global Constraints
 - Native macOS 13+ application, Apple silicon and Intel.
 - No telemetry, accounts, network calls in the application, administrator access, scheduled deletion, or permanent deletion.
 - Nothing selected by default; explicit confirmation before Trash.
 - Large personal files, models, applications, and cloud folders are review-only; no claim that age proves disuse.
-- Cleanup allowed only inside an explicit local cache-root allowlist and direct old Downloads installer files.
+- Cleanup allowed only inside an explicit local cache-root allowlist and direct old Downloads installer files. Preserve cache candidates with any descendant modified in the last 7 days; timestamps never prove disuse.
+- Preserve all AI models, installed skills, detected Git/project contents, and frequently used data. Model/skill/project protections apply independently of candidate labels and at cleanup revalidation.
 - Reject symlinks, path escapes, identity changes, partial measurements, overlapping candidates, and unsupported roots at cleanup time independently of UI state.
 - Report allocated-size estimates separately from measured available space. Moving to Trash does not reclaim space until Trash is emptied.
 - Test with temporary fixtures, never remove real user files.
